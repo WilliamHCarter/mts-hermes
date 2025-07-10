@@ -1,28 +1,36 @@
 #include <iostream>
-#include "../libs/easywsclient.hpp"
 #include <string>
+#include <thread>
+#include <atomic>
+#include "App.h"
+
+std::atomic<bool> keep_running(true);
 
 int main(){
     std::cout << "Welcome to Hermes" << std::endl;
 
-    auto ws = easywsclient::WebSocket::from_url("wss://stream.binance.com:9443/ws/btcusdt@ticker", "");
+    uWS::App().ws<void>("/*", {
+        .compression = uWS::DISABLED,
+        .maxPayloadLength = 16 * 1024,
+        .idleTimeout = 0,
 
-    if (!ws) {
-        std::cerr << "Error: Failed to connect" << std::endl;
-        return 1;
-    }
+        .open = [](auto *ws) {
+        },
 
-    ws->dispatch([](const std::string& message) {
-        std::cout << "BTC/USDT: " << message << std::endl;
-    });
+        .message = [](auto *ws, std::string_view message, uWS::OpCode opCode) {
+            std::cout << "BTC/USDT: " << message << std::endl;
+        },
 
-    while (ws->getReadyState() != easywsclient::WebSocket::CLOSED){
-        ws->poll(1000);
-        ws->dispatch([](const std::string& message){
-            std::cout << message << std::endl;
-        });
-    }
+        .close = [](auto *ws, int code, std::string_view message) {
+            std::cerr << "Error: Connection closed" << std::endl;
+            keep_running = false;
+        }
+    }).connect("wss://stream.binance.com:9443/ws/btcusdt@ticker", [](auto *ws) {
+        if (!ws) {
+            std::cerr << "Error: Failed to connect" << std::endl;
+            keep_running = false;
+        }
+    }).run();
 
-    delete ws;
     return 0;
 }
