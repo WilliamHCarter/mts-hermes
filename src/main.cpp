@@ -1,36 +1,32 @@
 #include <iostream>
-#include <string>
+#include <ixwebsocket/IXWebSocket.h>
 #include <thread>
-#include <atomic>
-#include "App.h"
-
-std::atomic<bool> keep_running(true);
+#include <chrono>
 
 int main(){
     std::cout << "Welcome to Hermes" << std::endl;
 
-    uWS::App().ws<void>("/*", {
-        .compression = uWS::DISABLED,
-        .maxPayloadLength = 16 * 1024,
-        .idleTimeout = 0,
+    // Create WebSocket
+    ix::WebSocket ws;
+    ws.setUrl("wss://stream.binance.com:9443/ws/btcusdt@ticker");
 
-        .open = [](auto *ws) {
-        },
-
-        .message = [](auto *ws, std::string_view message, uWS::OpCode opCode) {
-            std::cout << "BTC/USDT: " << message << std::endl;
-        },
-
-        .close = [](auto *ws, int code, std::string_view message) {
-            std::cerr << "Error: Connection closed" << std::endl;
-            keep_running = false;
-        }
-    }).connect("wss://stream.binance.com:9443/ws/btcusdt@ticker", [](auto *ws) {
-        if (!ws) {
+    // Setup message handler
+    ws.setOnMessageCallback([](const ix::WebSocketMessagePtr& msg) {
+        if (msg->type == ix::WebSocketMessageType::Message) {
+            std::cout << "BTC/USDT: " << msg->str << std::endl;
+        } else if (msg->type == ix::WebSocketMessageType::Error) {
             std::cerr << "Error: Failed to connect" << std::endl;
-            keep_running = false;
         }
-    }).run();
+    });
 
+    // Connect and start
+    ws.start();
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+
+    while (ws.getReadyState() == ix::ReadyState::Open) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
+
+    ws.stop();
     return 0;
 }
