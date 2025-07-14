@@ -1,32 +1,28 @@
 #include <iostream>
-#include <ixwebsocket/IXWebSocket.h>
 #include <thread>
 #include <chrono>
+#include "websocket.cpp"
 
-int main(){
+int main() {
     std::cout << "Welcome to Hermes" << std::endl;
 
-    // Create WebSocket
-    ix::WebSocket ws;
-    ws.setUrl("wss://stream.binance.com:9443/ws/btcusdt@ticker");
+    IXWebSocketAdapter ws;
 
-    // Setup message handler
-    ws.setOnMessageCallback([](const ix::WebSocketMessagePtr& msg) {
-        if (msg->type == ix::WebSocketMessageType::Message) {
-            std::cout << "BTC/USDT: " << msg->str << std::endl;
-        } else if (msg->type == ix::WebSocketMessageType::Error) {
-            std::cerr << "Error: Failed to connect" << std::endl;
-        }
+    ws.setOnConnect([]() {
+        std::cout << "Connected to Binance WebSocket!" << std::endl;
     });
 
-    // Connect and start
-    ws.start();
+    ws.setOnDisconnect([]() {
+        std::cout << "Disconnected from Binance WebSocket." << std::endl;
+    });
+
+    ws.setOnMessage([](const std::string& message) {
+        std::cout << "BTC/USDT: " << message << std::endl;
+    });
+
+    ws.connect("wss://stream.binance.com:9443/ws/btcusdt@ticker");
     std::this_thread::sleep_for(std::chrono::seconds(1));
+    ws.close();
 
-    while (ws.getReadyState() == ix::ReadyState::Open) {
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
-    }
-
-    ws.stop();
     return 0;
 }
