@@ -20,8 +20,8 @@ int main() {
         std::cout << "BTC/USDT: " << message << std::endl;
     });
 
-    ws.connect("wss://stream.binance.com:9443/ws/btcusdt@ticker");
-    std::this_thread::sleep_for(std::chrono::seconds(1));
+    ws.connect("wss://stream.binance.us:9443/ws/btcusdt@ticker");
+    std::this_thread::sleep_for(std::chrono::seconds(5));
     ws.close();
 
     return 0;

@@ -45,7 +45,8 @@ public:
                     break;
 
                 case ix::WebSocketMessageType::Error:
-                    std::cout << "Failed to Connect..." << std::endl;
+                    std::cout << "WebSocket Error: " << msg->errorInfo.reason
+                                << " (code: " << msg->errorInfo.retries << ")" << std::endl;
                     break; //TODO: maybe we try using c++ result stuff idk.
 
                 default:

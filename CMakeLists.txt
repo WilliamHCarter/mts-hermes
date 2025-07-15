@@ -4,6 +4,14 @@ project(hermes)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# Find required packages
+find_package(OpenSSL REQUIRED)
+find_package(Threads REQUIRED)
+
+# Configure IXWebSocket with TLS support
+set(USE_TLS ON CACHE BOOL "Enable TLS support")
+set(USE_OPEN_SSL ON CACHE BOOL "Use OpenSSL for TLS")
+
 # Fetch IXWebSocket automatically
 include(FetchContent)
 FetchContent_Declare(
@@ -14,10 +22,6 @@ FetchContent_Declare(
 
 # Make IXWebSocket available
 FetchContent_MakeAvailable(IXWebSocket)
-
-# Find required packages
-find_package(OpenSSL REQUIRED)
-find_package(Threads REQUIRED)
 
 # Add executable
 add_executable(hermes
