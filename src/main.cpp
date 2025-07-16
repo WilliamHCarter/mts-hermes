@@ -3,6 +3,20 @@
 #include <chrono>
 #include "websocket.cpp"
 
+// mess about with rapidjson
+#include <rapidjson/document.h>
+#include <rapidjson/writer.h>
+#include <rapidjson/stringbuffer.h>
+const char* kTypeNames[] = {
+    "Null",
+    "False",
+    "True",
+    "Object",
+    "Array",
+    "String",
+    "Number"
+};
+
 int main() {
     std::cout << "Welcome to Hermes" << std::endl;
 
@@ -20,11 +34,23 @@ int main() {
     });
 
     binance_ws.setOnMessage([](const std::string& message) {
-        std::cout << "BTC/USDT: " << message << std::endl;
+        rapidjson::Document d;
+        d.Parse(message.c_str());
+        std::string latest_price = "oh";
+        // for (auto& m : d.GetObject())
+        //     printf("Type of member %s is %s\n",
+        //         m.name.GetString(), kTypeNames[m.value.GetType()]);
+        if (d.HasMember("c") && d["c"].IsString()) {
+            latest_price = d["c"].GetString();
+        } else {
+            std::cout << "oops" << std::endl;
+
+        }
+        std::cout << "BTC/USDT: " << latest_price << std::endl;
     });
 
     binance_ws.connect("wss://stream.binance.us:9443/ws/btcusdt@ticker");
-    std::this_thread::sleep_for(std::chrono::seconds(5));
+    std::this_thread::sleep_for(std::chrono::seconds(10));
     binance_ws.close();
 
 
@@ -43,8 +69,15 @@ int main() {
     });
 
     coinbase_ws.setOnMessage([](const std::string& message) {
-        std::cout << "BTC/USDT: " << message << std::endl;
-    });
+        rapidjson::Document d;
+        d.Parse(message.c_str());
+        std::string latest_price = "oh";
+        if (d.HasMember("price") && d["price"].IsString()) {
+            latest_price = d["price"].GetString();
+        } else {
+            std::cout << "oops" << std::endl;
+        }
+        std::cout << "BTC/USDT: " << latest_price << std::endl;    });
 
     coinbase_ws.connect("wss://ws-feed.exchange.coinbase.com");
 

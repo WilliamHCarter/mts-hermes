@@ -8,24 +8,39 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(OpenSSL REQUIRED)
 find_package(Threads REQUIRED)
 
-# Configure IXWebSocket with TLS support
+# TLS settings
 set(USE_TLS ON CACHE BOOL "Enable TLS support")
 set(USE_OPEN_SSL ON CACHE BOOL "Use OpenSSL for TLS")
 
-# Fetch IXWebSocket automatically
 include(FetchContent)
+
+# IXWebSocket
 FetchContent_Declare(
     IXWebSocket
     GIT_REPOSITORY https://github.com/machinezone/IXWebSocket.git
     GIT_TAG        v11.4.5  # Latest stable version
 )
-
-# Make IXWebSocket available
 FetchContent_MakeAvailable(IXWebSocket)
+
+# RapidJSON
+set(RAPIDJSON_BUILD_DOC OFF CACHE INTERNAL "")
+set(RAPIDJSON_BUILD_EXAMPLES OFF CACHE INTERNAL "")
+set(RAPIDJSON_BUILD_TESTS OFF CACHE INTERNAL "")
+FetchContent_Declare(
+    rapidjson
+    GIT_REPOSITORY https://github.com/Tencent/rapidjson.git
+    GIT_TAG        master
+)
+FetchContent_MakeAvailable(rapidjson)
 
 # Add executable
 add_executable(hermes
     src/main.cpp
+)
+
+# Include RapidJSON headers
+target_include_directories(hermes PRIVATE
+    ${rapidjson_SOURCE_DIR}/include
 )
 
 # Link libraries
