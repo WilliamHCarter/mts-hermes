@@ -2,6 +2,7 @@
 #include <thread>
 #include <chrono>
 #include "websocket.cpp"
+#include <optional>
 
 // mess about with rapidjson
 #include <rapidjson/document.h>
@@ -17,9 +18,19 @@ const char* kTypeNames[] = {
     "Number"
 };
 
+std::optional<std::string> parseVal(std::string message, std::string key) {
+    rapidjson::Document d;
+    d.Parse(message.c_str());
+    if (d.HasMember(key.c_str()) && d[key.c_str()].IsString()) {
+        return d[key.c_str()].GetString();
+    } else {
+        return std::nullopt;
+    }
+}
+
+
 int main() {
     std::cout << "Welcome to Hermes" << std::endl;
-
 
     //=============== Binance =======================
     std::cout << "Trying Binance..." << std::endl;
@@ -34,19 +45,7 @@ int main() {
     });
 
     binance_ws.setOnMessage([](const std::string& message) {
-        rapidjson::Document d;
-        d.Parse(message.c_str());
-        std::string latest_price = "oh";
-        // for (auto& m : d.GetObject())
-        //     printf("Type of member %s is %s\n",
-        //         m.name.GetString(), kTypeNames[m.value.GetType()]);
-        if (d.HasMember("c") && d["c"].IsString()) {
-            latest_price = d["c"].GetString();
-        } else {
-            std::cout << "oops" << std::endl;
-
-        }
-        std::cout << "BTC/USDT: " << latest_price << std::endl;
+        std::cout << "BTC/USDT: " << parseVal(message, "c").value_or("oops") << std::endl;
     });
 
     binance_ws.connect("wss://stream.binance.us:9443/ws/btcusdt@ticker");
@@ -69,15 +68,8 @@ int main() {
     });
 
     coinbase_ws.setOnMessage([](const std::string& message) {
-        rapidjson::Document d;
-        d.Parse(message.c_str());
-        std::string latest_price = "oh";
-        if (d.HasMember("price") && d["price"].IsString()) {
-            latest_price = d["price"].GetString();
-        } else {
-            std::cout << "oops" << std::endl;
-        }
-        std::cout << "BTC/USDT: " << latest_price << std::endl;    });
+        std::cout << "BTC/USDT: " << parseVal(message, "price").value_or("oops") << std::endl;
+    });
 
     coinbase_ws.connect("wss://ws-feed.exchange.coinbase.com");
 
