@@ -1,22 +1,10 @@
 #include <iostream>
 #include <thread>
 #include <chrono>
-#include "websocket.cpp"
 #include <optional>
+#include "websocket.cpp"
+#include "jsonparse.cpp"
 
-// mess about with rapidjson
-#include <rapidjson/document.h>
-#include <rapidjson/writer.h>
-#include <rapidjson/stringbuffer.h>
-const char* kTypeNames[] = {
-    "Null",
-    "False",
-    "True",
-    "Object",
-    "Array",
-    "String",
-    "Number"
-};
 
 std::optional<std::string> parseVal(std::string message, std::string key) {
     rapidjson::Document d;
@@ -26,6 +14,7 @@ std::optional<std::string> parseVal(std::string message, std::string key) {
     } else {
         return std::nullopt;
     }
+    auto json = RapidJsonAdaptor::parse(message);
 }
 
 
