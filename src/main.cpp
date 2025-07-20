@@ -7,14 +7,8 @@
 
 
 std::optional<std::string> parseVal(std::string message, std::string key) {
-    rapidjson::Document d;
-    d.Parse(message.c_str());
-    if (d.HasMember(key.c_str()) && d[key.c_str()].IsString()) {
-        return d[key.c_str()].GetString();
-    } else {
-        return std::nullopt;
-    }
     auto json = RapidJsonAdaptor::parse(message);
+    return json->getString(key);
 }
 
 

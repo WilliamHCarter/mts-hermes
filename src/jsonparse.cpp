@@ -12,9 +12,9 @@ public:
     virtual ~IJson() = default;
 
     virtual std::optional<std::string> getString(const std::string& key) const = 0;
-    //virtual std::optional<double> getDouble(const std::string& key) const = 0;
-    //virtual std::optional<int> getInt(const std::string& key) const = 0;
-    //virtual std::optional<bool> getBool(const std::string& key) const = 0;
+    virtual std::optional<double> getDouble(const std::string& key) const = 0;
+    virtual std::optional<int> getInt(const std::string& key) const = 0;
+    virtual std::optional<bool> getBool(const std::string& key) const = 0;
 
     //virtual std::shared_ptr<IJson> getObject(const std::string& key) const = 0;
    // virtual std::vector<std::shared_ptr<IJson>> getArray(const std::string& key) const = 0;
@@ -29,6 +29,24 @@ public:
     std::optional<std::string> getString(const std::string& key) const override {
         if (value_.HasMember(key.c_str()) && value_[key.c_str()].IsString())
             return value_[key.c_str()].GetString();
+        return std::nullopt;
+    }
+
+    std::optional<double> getDouble(const std::string& key) const override {
+        if (value_.HasMember(key.c_str()) && value_[key.c_str()].IsDouble())
+            return value_[key.c_str()].GetDouble();
+        return std::nullopt;
+    }
+
+    std::optional<int> getInt(const std::string& key) const override {
+        if (value_.HasMember(key.c_str()) && value_[key.c_str()].IsInt())
+            return value_[key.c_str()].GetInt();
+        return std::nullopt;
+    }
+
+    std::optional<bool> getBool(const std::string& key) const override {
+        if (value_.HasMember(key.c_str()) && value_[key.c_str()].IsBool())
+            return value_[key.c_str()].GetBool();
         return std::nullopt;
     }
 
