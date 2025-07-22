@@ -16,8 +16,8 @@ public:
     virtual std::optional<int> getInt(const std::string& key) const = 0;
     virtual std::optional<bool> getBool(const std::string& key) const = 0;
 
-    //virtual std::shared_ptr<IJson> getObject(const std::string& key) const = 0;
-   // virtual std::vector<std::shared_ptr<IJson>> getArray(const std::string& key) const = 0;
+    virtual std::shared_ptr<IJson> getObject(const std::string& key) const = 0;
+    virtual std::vector<std::shared_ptr<IJson>> getArray(const std::string& key) const = 0;
 
     static std::shared_ptr<IJson> parse(const std::string& jsonStr);
 };
@@ -50,12 +50,30 @@ public:
         return std::nullopt;
     }
 
+    std::shared_ptr<IJson> getObject(const std::string& key) const override {
+        if (value_.HasMember(key.c_str()) && value_[key.c_str()].IsObject()) {
+            return std::make_shared<RapidJsonAdaptor>(value_[key.c_str()]);
+        }
+        return nullptr;
+    }
+
     static std::shared_ptr<IJson> parse(const std::string& jsonStr) {
         auto doc = std::make_shared<rapidjson::Document>();
         if (doc->Parse(jsonStr.c_str()).HasParseError()) {
             throw std::runtime_error("Invalid JSON");
         }
         return std::shared_ptr<IJson>(new RapidJsonAdaptor(*doc, doc));
+    }
+
+    std::vector<std::shared_ptr<IJson>> getArray(const std::string& key) const override {
+        std::vector<std::shared_ptr<IJson>> result;
+        if (value_.HasMember(key.c_str()) && value_[key.c_str()].IsArray()) {
+            const auto& arr = value_[key.c_str()].GetArray();
+            for (const auto& item : arr) {
+                result.push_back(std::make_shared<RapidJsonAdaptor>(item));
+            }
+        }
+        return result;
     }
 
 private:
