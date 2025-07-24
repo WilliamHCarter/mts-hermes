@@ -25,6 +25,8 @@ public:
 
 class RapidJsonAdaptor : public IJson {
 public:
+    RapidJsonAdaptor(const rapidjson::Value& value, std::shared_ptr<rapidjson::Document> root)
+        : value_(value), root_(std::move(root)) {}
 
     std::optional<std::string> getString(const std::string& key) const override {
         if (value_.HasMember(key.c_str()) && value_[key.c_str()].IsString())
@@ -52,7 +54,7 @@ public:
 
     std::shared_ptr<IJson> getObject(const std::string& key) const override {
         if (value_.HasMember(key.c_str()) && value_[key.c_str()].IsObject()) {
-            return std::make_shared<RapidJsonAdaptor>(value_[key.c_str()]);
+            return std::make_shared<RapidJsonAdaptor>(value_[key.c_str()], root_);
         }
         return nullptr;
     }
@@ -68,17 +70,15 @@ public:
     std::vector<std::shared_ptr<IJson>> getArray(const std::string& key) const override {
         std::vector<std::shared_ptr<IJson>> result;
         if (value_.HasMember(key.c_str()) && value_[key.c_str()].IsArray()) {
-            const auto& arr = value_[key.c_str()].GetArray();
-            for (const auto& item : arr) {
-                result.push_back(std::make_shared<RapidJsonAdaptor>(item));
+            for (const auto& item : value_[key.c_str()].GetArray()) {
+                result.push_back(std::make_shared<RapidJsonAdaptor>(item, root_));
             }
         }
         return result;
     }
 
+
 private:
     const rapidjson::Value& value_;
     std::shared_ptr<rapidjson::Document> root_;
-    RapidJsonAdaptor(const rapidjson::Value& value, std::shared_ptr<rapidjson::Document> root)
-        : value_(value), root_(std::move(root)) {}
 };
