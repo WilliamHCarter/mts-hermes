@@ -42,8 +42,7 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(googletest)
 
-
-# Add executable
+# Add main executable
 add_executable(hermes
     src/main.cpp
 )
@@ -53,7 +52,7 @@ target_include_directories(hermes PRIVATE
     ${rapidjson_SOURCE_DIR}/include
 )
 
-# Link libraries
+# Link libraries for main executable
 target_link_libraries(hermes
     ixwebsocket
     OpenSSL::SSL
@@ -63,3 +62,22 @@ target_link_libraries(hermes
 
 # Compiler flags
 target_compile_options(hermes PRIVATE -Wall -Wextra -O2)
+
+# Add test executable
+add_executable(hermes_tests
+    tests/test_websocket.cpp
+)
+
+# Include directories for tests
+target_include_directories(hermes_tests PRIVATE
+    ${rapidjson_SOURCE_DIR}/include
+)
+
+# Link libraries for tests
+target_link_libraries(hermes_tests
+    gtest_main
+    ixwebsocket
+    OpenSSL::SSL
+    OpenSSL::Crypto
+    Threads::Threads
+)
