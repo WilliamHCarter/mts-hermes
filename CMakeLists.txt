@@ -65,7 +65,7 @@ target_compile_options(hermes PRIVATE -Wall -Wextra -O2)
 
 # Add test executable
 add_executable(hermes_tests
-    tests/test_websocket.cpp
+    test/test_websocket.cpp
 )
 
 # Include directories for tests
