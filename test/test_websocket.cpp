@@ -51,3 +51,32 @@ TEST(IXWebSocketAdapterTest, MultipleInstancesAreIndependent) {
     EXPECT_FALSE(ws1Connected);
     EXPECT_FALSE(ws2Connected);
 }
+
+
+// Test setting connect, disconnect, and message callbacks, validate they are initialized correctly.
+TEST(IXWebSocketAdapterTest, CanSetAllCallbacks) {
+    IXWebSocketAdapter ws;
+
+    bool connectCalled = false;
+    bool disconnectCalled = false;
+    bool messageCalled = false;
+    std::string receivedMessage;
+
+    ws.setOnConnect([&connectCalled]() {
+        connectCalled = true;
+    });
+
+    ws.setOnDisconnect([&disconnectCalled]() {
+        disconnectCalled = true;
+    });
+
+    ws.setOnMessage([&messageCalled, &receivedMessage](const std::string& msg) {
+        messageCalled = true;
+        receivedMessage = msg;
+    });
+
+    EXPECT_FALSE(connectCalled);
+    EXPECT_FALSE(disconnectCalled);
+    EXPECT_FALSE(messageCalled);
+    EXPECT_TRUE(receivedMessage.empty());
+}
