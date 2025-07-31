@@ -80,3 +80,30 @@ TEST(IXWebSocketAdapterTest, CanSetAllCallbacks) {
     EXPECT_FALSE(messageCalled);
     EXPECT_TRUE(receivedMessage.empty());
 }
+
+// Test sending a message does not trigger callbacks or crash the client when not connected.
+TEST(IXWebSocketAdapterTest, SendIsSafeBeforeConnect) {
+    IXWebSocketAdapter ws;
+
+    bool messageCallbackCalled = false;
+    bool connectCallbackCalled = false;
+    bool disconnectCallbackCalled = false;
+
+    ws.setOnMessage([&messageCallbackCalled](const std::string&) {
+        messageCallbackCalled = true;
+    });
+
+    ws.setOnConnect([&connectCallbackCalled]() {
+        connectCallbackCalled = true;
+    });
+
+    ws.setOnDisconnect([&disconnectCallbackCalled]() {
+        disconnectCallbackCalled = true;
+    });
+
+    EXPECT_NO_THROW(ws.send("Test message"));
+
+    EXPECT_FALSE(messageCallbackCalled);
+    EXPECT_FALSE(connectCallbackCalled);
+    EXPECT_FALSE(disconnectCallbackCalled);
+}
